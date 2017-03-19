@@ -40,6 +40,16 @@ std::vector<std::string> GetFourBytesTags()
     return Return;
 }
 
+//Add to vector nested tags (tags which can contains additional TLV)
+std::vector<std::string> GetNestedTags()
+{
+    std::vector<std::string> Return;
+    
+    Return.push_back("FF8105");
+    
+    return Return;
+}
+
 int main(int argc, const char * argv[])
 {
     BerTlv Tlv;
@@ -52,6 +62,9 @@ int main(int argc, const char * argv[])
     Tlv.SetTwoBytesTags(GetTwoBytesTags());
     Tlv.SetThreeBytesTags(GetThreeBytesTags());
     Tlv.SetFourBytesTags(GetFourBytesTags());
+    
+    //OPTIONAL - set nested tags (tags which can contains TVL)
+    Tlv.SetNestedTags(GetNestedTags());
     
     //Example how to add tags and values to TLV
     Tlv.Add("9F40", Conv::AsciiToBin("31323334353637"));
@@ -69,14 +82,15 @@ int main(int argc, const char * argv[])
     Tlv.GetTlv().clear();
     
     //Add example TLV collection
-    Tlv.SetTlv(Conv::AsciiToBin("9f1a0207649f02060000000010005f2a0207649a031612209c0100950500000000009f37040095055b820220009f2608ab07b02018d87dc89f2701409f100706010a039000009f360200069f6604320040009f03060000000000009f34031f00009f45009f4c0200065a0847617390010100105f3401045f2403221231500b564953412043524544495457114761739001010010d2212201191894441f56009b0200005f201741445654205156534443205445535420434152442030345f28009f07009f0d009f0e009f0f009f51009f3901079f33030068c01f1901089f42008407a00000000310109f5d009f6c0210009f74009f12104361727465204465204372656469746f5f2d009f0607a00000000310105f25009f21031714228f01929f1e082d3433332d313930"));
+    Tlv.SetTlv(Conv::AsciiToBin("9f1a020764FF81050E9f1a0207649f02060000000010009f02060000000010005f2a0207649a031612209c0100950500000000009f37040095055b820220009f2608ab07b02018d87dc89f2701409f100706010a039000009f360200069f6604320040009f03060000000000009f34031f00009f45009f4c0200065a0847617390010100105f3401045f2403221231500b564953412043524544495457114761739001010010d2212201191894441f56009b0200005f201741445654205156534443205445535420434152442030345f28009f07009f0d009f0e009f0f009f51009f3901079f33030068c01f1901089f42008407a00000000310109f5d009f6c0210009f74009f12104361727465204465204372656469746f5f2d009f0607a00000000310105f25009f21031714228f01929f1e082d3433332d313930"));
     
+    //FF81050E9f1a0207649f0206000000001000
     std::cout << "\n\nTLV struct:\n";
     std::cout << Conv::BinToAscii(Tlv.GetTlv());
     
     //Retrieve value of tag
-    Tag = "FF8105";
-    if(Tlv.GetValue(Tag, &Value) == OK)
+    Tag = "9F02";
+    if(Tlv.GetValue(Tag, &Value, true) == OK)
     {
         std::cout << "\n\nValue of tag: " + Tag + "\n";
         std::cout << Conv::BinToAscii(Value);
@@ -85,7 +99,7 @@ int main(int argc, const char * argv[])
     std::cout << "\n\n";
     
     //Dump from TLV collection
-    Tlv.DumpAllTagsAndValues(&Output);
+    Tlv.DumpAllTagsAndValues(&Output, true);
     std::cout << Output;
     
     return 0;

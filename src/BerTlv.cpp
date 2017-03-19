@@ -41,12 +41,13 @@ short BerTlv::Add(std::string Tag, std::vector<unsigned char> Value)
 }
 
 //Retrieve value of tag from TLV collection and save it to 'ValueOfTag'
-short BerTlv::GetValue(std::string Tag, std::vector<unsigned char> *ValueOfTag)
+short BerTlv::GetValue(std::string Tag, std::vector<unsigned char> *ValueOfTag, bool CheckNestedTags)
 {
     std::vector<unsigned char> BinTag;
     int ValueSize = 0;
     short LengthSize = 0;
     size_t StartPosition = 0;
+    int TagSize = 0;
     
     if(Tag.length() <= 0)
         return TAG_IS_EMPTY;
@@ -127,17 +128,25 @@ short BerTlv::GetValue(std::string Tag, std::vector<unsigned char> *ValueOfTag)
             StartPosition = i + 4 + LengthSize;
         }
         
-        //Tag not found so we skip value
+        //Tag not found?
         if(StartPosition <= 0)
         {
-            //Get and increment i + size of tag
-            i += GetTagLength(i);
-            if(_TlvStruct.size() < i)
-                return TLV_SIZE_ERROR;
+            TagSize = GetTagLength(i);
             
             //Get size of value and size of length
             LengthSize = GetSizeOfValue(i, &ValueSize);
             if(LengthSize == TLV_SIZE_ERROR)
+                return TLV_SIZE_ERROR;
+            
+            if(CheckNestedTags && IsTagNested(i, TagSize))
+            {
+                if(GetValueFromTlvInsideTag(i, TagSize + LengthSize + ValueSize, BinTag, ValueOfTag) == OK)
+                    return OK;
+            }
+               
+            //Increment i + size of tag
+            i += TagSize;
+            if(_TlvStruct.size() < i)
                 return TLV_SIZE_ERROR;
             
             //Increment i + size of value
@@ -160,12 +169,13 @@ short BerTlv::GetValue(std::string Tag, std::vector<unsigned char> *ValueOfTag)
 }
 
 //Dump all data from TLV collection and save it to 'Output'
-short BerTlv::DumpAllTagsAndValues(std::string *Output)
+short BerTlv::DumpAllTagsAndValues(std::string *Output, bool ParseNestedTags)
 {
     short TagSize = 0;
     int ValueSize = 0;
     short LengthSize = 0;
     size_t StartPosition = 0;
+    size_t OutputActualPosition = 0;
     
     //Traverse through colection
     for(size_t i = 0; i < _TlvStruct.size(); i++)
@@ -186,17 +196,155 @@ short BerTlv::DumpAllTagsAndValues(std::string *Output)
         //Increment i + size of value
         i += LengthSize + ValueSize - 1;
         
-        *Output += Conv::BinToAscii(&_TlvStruct[StartPosition], TagSize, false);
-        *Output += "[";
-        *Output += Conv::BinToAscii(&_TlvStruct[StartPosition + TagSize], LengthSize, false);
-        *Output += "] = ";
-        *Output += Conv::BinToAscii(&_TlvStruct[StartPosition + TagSize + LengthSize], ValueSize, false);
-        *Output += "\n";
+        //Parse tags inside value?
+        if(ParseNestedTags && IsTagNested(StartPosition, TagSize))
+        {
+            *Output += Conv::BinToAscii(&_TlvStruct[StartPosition], TagSize, false);
+            *Output += "[";
+            *Output += Conv::BinToAscii(&_TlvStruct[StartPosition + TagSize], LengthSize, false);
+            *Output += "]";
+            OutputActualPosition = Output->length();
+            
+            if(DumpTlvInsideTag(StartPosition + TagSize + LengthSize, ValueSize, Output) == OK)
+            {
+                Output->insert(OutputActualPosition, "\n{\n");
+                *Output += "}";
+            }
+            else
+            {
+                *Output += " = ";
+                *Output += Conv::BinToAscii(&_TlvStruct[StartPosition + TagSize + LengthSize], ValueSize, false);
+            }
+            
+            *Output += "\n";
+        }
+        //Just parse value of tag
+        else
+        {
+            *Output += Conv::BinToAscii(&_TlvStruct[StartPosition], TagSize, false);
+            *Output += "[";
+            *Output += Conv::BinToAscii(&_TlvStruct[StartPosition + TagSize], LengthSize, false);
+            *Output += "] = ";
+            *Output += Conv::BinToAscii(&_TlvStruct[StartPosition + TagSize + LengthSize], ValueSize, false);
+            *Output += "\n";
+        }
     } //For
     
     return OK;
 }
 
+short BerTlv::DumpTlvInsideTag(size_t StartPosition, int Length, std::string *Output)
+{
+    short TagSize = 0;
+    int ValueSize = 0;
+    short LengthSize = 0;
+    size_t MaxSize = StartPosition + Length;
+    size_t TmpStartPosition = 0;
+    std::string TmpOutput = "";
+    
+    //Traverse through colection
+    for(size_t i = StartPosition; i < MaxSize; i++)
+    {
+        TmpStartPosition = i;
+        
+        //Get and increment i + size of tag
+        TagSize = GetTagLength(i);
+        i += TagSize;
+        if(MaxSize < i)
+            return TLV_SIZE_ERROR;
+        
+        //Get size of value and size of length
+        LengthSize = GetSizeOfValue(i, &ValueSize);
+        if(LengthSize == TLV_SIZE_ERROR || (ValueSize + StartPosition + TagSize + LengthSize) > MaxSize)
+            return TLV_SIZE_ERROR;
+        
+        //Increment i + size of value
+        i += LengthSize + ValueSize - 1;
+        
+        TmpOutput += "  ";
+        TmpOutput += Conv::BinToAscii(&_TlvStruct[TmpStartPosition], TagSize, false);
+        TmpOutput += "[";
+        TmpOutput += Conv::BinToAscii(&_TlvStruct[TmpStartPosition + TagSize], LengthSize, false);
+        TmpOutput += "] = ";
+        TmpOutput += Conv::BinToAscii(&_TlvStruct[TmpStartPosition + TagSize + LengthSize], ValueSize, false);
+        TmpOutput += "\n";
+    }
+    
+    *Output += TmpOutput;
+    
+    return OK;
+}
+
+short BerTlv::GetValueFromTlvInsideTag(size_t StartPosition, int Length, std::vector<unsigned char> Tag, std::vector<unsigned char> *Output)
+{
+    short TagSize = 0;
+    int ValueSize = 0;
+    short LengthSize = 0;
+    size_t MaxSize = StartPosition + Length;
+    std::vector<unsigned char> TmpTag;
+    
+    //Traverse through colection
+    for(size_t i = StartPosition; i < MaxSize; i++)
+    {
+        TmpTag.clear();
+        TagSize = GetTagLength(i);
+        
+        //Check if we found tag which we are looking for
+        if(TagSize == Tag.size())
+        {
+            for(size_t j = i; j < i + TagSize; i++)
+                TmpTag.push_back(_TlvStruct[j]);
+            
+            if(!std::equal(Tag.begin(), Tag.end(), TmpTag.begin()))
+                continue;
+        }
+        else
+            continue;
+        
+        //We are here so it means we have corect tag
+        
+        //Increment i + size of tag
+        i += TagSize;
+        if(MaxSize < i)
+            return TLV_SIZE_ERROR;
+        
+        //Get size of value and size of length
+        LengthSize = GetSizeOfValue(i, &ValueSize);
+        if(LengthSize == TLV_SIZE_ERROR || (ValueSize + StartPosition + TagSize + LengthSize) > MaxSize)
+            return TLV_SIZE_ERROR;
+        
+        //Copy value of tag to output
+        for(size_t j = i + LengthSize; j < i + LengthSize + ValueSize; j++)
+            Output->push_back(_TlvStruct[j]);
+
+        return OK;
+    }
+    
+    return FAILED;
+}
+
+//Check if the tag from TLV collection is in _NestedTags vector
+bool BerTlv::IsTagNested(size_t StartPosition, short TagSize)
+{
+    std::vector<unsigned char> Tag;
+    std::vector<unsigned char> NestedTag;
+    
+    for(size_t i = StartPosition; i < StartPosition + TagSize; i++)
+        Tag.push_back(_TlvStruct[i]);
+    
+    for(size_t i = 0; i < _NestedTags.size(); i++)
+    {
+        if(Tag.size() == (_NestedTags[i].length() / 2))
+        {
+            NestedTag = Conv::AsciiToBin(_NestedTags[i]);
+            
+            if(std::equal(Tag.begin(), Tag.end(), NestedTag.begin()))
+                return true;
+        }
+    }
+    
+    return false;
+}
 
 void BerTlv::SetTwoBytesTags(std::vector<std::string> Tags)
 {
@@ -242,7 +390,6 @@ void BerTlv::SetFourBytesTags(std::vector<std::string> Tags)
         }
     }
 }
-
 
 short BerTlv::GetSizeOfValue(size_t StartPosition, int *SizeOfValue)
 {
