@@ -12,5 +12,3 @@ Projects: Xcode, Visual Studio 2010, Eclipse
 
 This piece of code can create or manipulate with BER-TLV collection.
 
-**Latest change**
-Added support of nested tags.
