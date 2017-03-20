@@ -40,130 +40,62 @@ short BerTlv::Add(std::string Tag, std::vector<unsigned char> Value)
     return OK;
 }
 
-//Retrieve value of tag from TLV collection and save it to 'ValueOfTag'
+//Get value of tag
 short BerTlv::GetValue(std::string Tag, std::vector<unsigned char> *ValueOfTag, bool CheckNestedTags)
 {
-    std::vector<unsigned char> BinTag;
+    short TagSize = 0;
     int ValueSize = 0;
     short LengthSize = 0;
-    size_t StartPosition = 0;
-    int TagSize = 0;
+    size_t MaxSize = _TlvStruct.size();
+    std::vector<unsigned char> TmpTag;
+    std::vector<unsigned char> BinTag = Conv::AsciiToBin(Tag);
+    bool TagFound = false;
     
-    if(Tag.length() <= 0)
-        return TAG_IS_EMPTY;
-    
-    if(Tag.length() % 2 != 0)
-        return TAG_ERROR;
-    
-    BinTag = Conv::AsciiToBin(Tag);
-    
-    //Start looking for tag
-    for(size_t i = 0; i < _TlvStruct.size(); i++)
+    //Traverse through colection
+    for(size_t i = 0; i < MaxSize; i++)
     {
-        ValueSize = 0;
-        LengthSize = 0;
-        StartPosition = 0;
+        TmpTag.clear();
+        TagSize = GetTagLength(i);
         
-        //One byte tag
-        if(BinTag.size() == 1 && _TlvStruct[i] == BinTag[0])
+        //Check if we found tag which we are looking for
+        if(TagSize == BinTag.size())
         {
-            if(_TlvStruct.size() < i + 1)
-                return TLV_SIZE_ERROR;
+            for(size_t j = 0; j < TagSize; j++)
+                TmpTag.push_back(_TlvStruct[i + j]);
             
-            //Get size of value and size of length
-            LengthSize = GetSizeOfValue(i + 1, &ValueSize);
-            if(LengthSize == TLV_SIZE_ERROR)
-                return TLV_SIZE_ERROR;
-            
-            //Calculate start position of value
-            StartPosition = i + 1 + LengthSize;
-        }
-        //Two bytes tag
-        else if(BinTag.size() == 2 && _TlvStruct[i] == BinTag[0] &&
-                _TlvStruct.size() > i + 1 && _TlvStruct[i + 1] == BinTag[1])
-        {
-            if(_TlvStruct.size() < i + 2)
-                return TLV_SIZE_ERROR;
-            
-            //Get size of value and size of length
-            LengthSize = GetSizeOfValue(i + 2, &ValueSize);
-            if(LengthSize == TLV_SIZE_ERROR)
-                return TLV_SIZE_ERROR;
-            
-            //Calculate start position of value
-            StartPosition = i + 2 + LengthSize;
-        }
-        //Three bytes tag
-        else if(BinTag.size() == 3 && _TlvStruct[i] == BinTag[0] &&
-                _TlvStruct.size() > i + 1 && _TlvStruct[i + 1] == BinTag[1] &&
-                _TlvStruct.size() > i + 2 && _TlvStruct[i + 2] == BinTag[2])
-        {
-            if(_TlvStruct.size() < i + 3)
-                return TLV_SIZE_ERROR;
-            
-            //Get size of value and size of length
-            LengthSize = GetSizeOfValue(i + 3, &ValueSize);
-            if(LengthSize == TLV_SIZE_ERROR)
-                return TLV_SIZE_ERROR;
-            
-            //Calculate start position of value
-            StartPosition = i + 3 + LengthSize;
-        }
-        //Four bytes long tag
-        else if(BinTag.size() == 4 && _TlvStruct[i] == BinTag[0] &&
-                _TlvStruct.size() > i + 1 && _TlvStruct[i + 1] == BinTag[1] &&
-                _TlvStruct.size() > i + 2 && _TlvStruct[i + 2] == BinTag[2] &&
-                _TlvStruct.size() > i + 3 && _TlvStruct[i + 3] == BinTag[3])
-
-        {
-            if(_TlvStruct.size() < i + 4)
-                return TLV_SIZE_ERROR;
-            
-            //Get size of value and size of length
-            LengthSize = GetSizeOfValue(i + 4, &ValueSize);
-            if(LengthSize == TLV_SIZE_ERROR)
-                return TLV_SIZE_ERROR;
-            
-            //Calculate start position of value
-            StartPosition = i + 4 + LengthSize;
+            if(std::equal(BinTag.begin(), BinTag.end(), TmpTag.begin()))
+                TagFound = true;
         }
         
-        //Tag not found?
-        if(StartPosition <= 0)
+        //Increment i + size of tag
+        i += TagSize;
+        if(MaxSize < i)
+            return TLV_SIZE_ERROR;
+        
+        //Get size of value and size of length
+        LengthSize = GetSizeOfValue(i, &ValueSize);
+        if(LengthSize == TLV_SIZE_ERROR || (i + ValueSize + LengthSize) > MaxSize)
+            return TLV_SIZE_ERROR;
+        
+        //We found the tag?
+        if(TagFound)
         {
-            TagSize = GetTagLength(i);
-            
-            //Get size of value and size of length
-            LengthSize = GetSizeOfValue(i, &ValueSize);
-            if(LengthSize == TLV_SIZE_ERROR)
-                return TLV_SIZE_ERROR;
-            
-            if(CheckNestedTags && IsTagNested(i, TagSize))
-            {
-                if(GetValueFromTlvInsideTag(i, TagSize + LengthSize + ValueSize, BinTag, ValueOfTag) == OK)
-                    return OK;
-            }
-               
-            //Increment i + size of tag
-            i += TagSize;
-            if(_TlvStruct.size() < i)
-                return TLV_SIZE_ERROR;
-            
-            //Increment i + size of value
-            i += LengthSize + ValueSize - 1;
-        }
-        //We found tag so retrieve and return value
-        else
-        {
-            if(StartPosition + ValueSize > _TlvStruct.size())
-                return TLV_SIZE_ERROR;
-            
-            for(size_t j = StartPosition; j < StartPosition + ValueSize; j++)
+            //Copy value of tag to output
+            for(size_t j = i + LengthSize; j < i + LengthSize + ValueSize; j++)
                 ValueOfTag->push_back(_TlvStruct[j]);
             
             return OK;
         }
-    } //For
+        //We should parse inside nested tags?
+        else if(CheckNestedTags && IsTagNested(i - TagSize, TagSize))
+        {
+            if(GetValueFromTlv(i + TagSize + LengthSize, ValueSize, BinTag, ValueOfTag) == OK)
+                return OK;
+        }
+        else
+            i += LengthSize + ValueSize - 1;
+        
+    }
     
     return FAILED;
 }
@@ -275,13 +207,14 @@ short BerTlv::DumpTlvInsideTag(size_t StartPosition, int Length, std::string *Ou
     return OK;
 }
 
-short BerTlv::GetValueFromTlvInsideTag(size_t StartPosition, int Length, std::vector<unsigned char> Tag, std::vector<unsigned char> *Output)
+short BerTlv::GetValueFromTlv(size_t StartPosition, int Length, std::vector<unsigned char> Tag, std::vector<unsigned char> *Output)
 {
     short TagSize = 0;
     int ValueSize = 0;
     short LengthSize = 0;
     size_t MaxSize = StartPosition + Length;
     std::vector<unsigned char> TmpTag;
+    bool TagFound = false;
     
     //Traverse through colection
     for(size_t i = StartPosition; i < MaxSize; i++)
@@ -292,16 +225,12 @@ short BerTlv::GetValueFromTlvInsideTag(size_t StartPosition, int Length, std::ve
         //Check if we found tag which we are looking for
         if(TagSize == Tag.size())
         {
-            for(size_t j = i; j < i + TagSize; i++)
-                TmpTag.push_back(_TlvStruct[j]);
+            for(size_t j = 0; j < TagSize; j++)
+                TmpTag.push_back(_TlvStruct[i + j]);
             
-            if(!std::equal(Tag.begin(), Tag.end(), TmpTag.begin()))
-                continue;
+            if(std::equal(Tag.begin(), Tag.end(), TmpTag.begin()))
+                TagFound = true;
         }
-        else
-            continue;
-        
-        //We are here so it means we have corect tag
         
         //Increment i + size of tag
         i += TagSize;
@@ -313,11 +242,18 @@ short BerTlv::GetValueFromTlvInsideTag(size_t StartPosition, int Length, std::ve
         if(LengthSize == TLV_SIZE_ERROR || (ValueSize + StartPosition + TagSize + LengthSize) > MaxSize)
             return TLV_SIZE_ERROR;
         
-        //Copy value of tag to output
-        for(size_t j = i + LengthSize; j < i + LengthSize + ValueSize; j++)
-            Output->push_back(_TlvStruct[j]);
+        //We found the tag?
+        if(TagFound)
+        {
+            //Copy value of tag to output
+            for(size_t j = i + LengthSize; j < i + LengthSize + ValueSize; j++)
+                Output->push_back(_TlvStruct[j]);
+            
+            return OK;
+        }
+        else
+            i += LengthSize + ValueSize - 1;
 
-        return OK;
     }
     
     return FAILED;

@@ -31,7 +31,8 @@ private:
     short GetTagLength(size_t StartPosition);
     short DumpTlvInsideTag(size_t StartPosition, int Length, std::string *Output);
     bool IsTagNested(size_t StartPosition, short TagSize);
-    short GetValueFromTlvInsideTag(size_t StartPosition, int Length, std::vector<unsigned char> Tag, std::vector<unsigned char> *Output);
+    short GetValueFromTlv(size_t StartPosition, int Length, std::vector<unsigned char> Tag, std::vector<unsigned char> *Output);
+    
 };
 
 #endif /* BerTlv_h */
