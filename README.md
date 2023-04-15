@@ -20,11 +20,11 @@ This is BER-TLV parser and serializer which follows TLV rules from ISO 7816 - An
 
 
 ## How to use parser
-You can observe usage from file tests.cpp or folow below examples.
+You can observe usage from file [tests.cpp](https://github.com/huckor/BER-TLV/blob/master/src/tests.cpp) or follow below examples.
 
 1. Add BerTlv.cpp and BerTlv.h to your project.
 
-2. Folow below example using hex string aproach.
+2. Follow below example using hex string approach.
 ```
 //Create BerTlv object
 BerTlv Tlv;
@@ -40,7 +40,7 @@ if(Tlv.GetValue("9F02", &Value) == OK) {
 }
 ```
 
-3. Or follow below example using binary collection aproach.
+3. Or follow below example using binary collection approach.
 ```
 //Create BerTlv object
 BerTlv Tlv;
@@ -61,11 +61,11 @@ if(Tlv.GetValue(BinTag, &Value) == OK) {
 
 
 ## How to use serializer
-You can observe usage from file tests.cpp or folow below examples.
+You can observe usage from file [tests.cpp](https://github.com/huckor/BER-TLV/blob/master/src/tests.cpp) or follow below examples.
 
 1. Add BerTlv.cpp and BerTlv.h to your project.
 
-2. Folow below example using hex string aproach.
+2. Follow below example using hex string approach.
 ```
 //Create BerTlv object
 BerTlv Tlv;
@@ -91,7 +91,7 @@ if(Tlv.Add("FF8105", NestedTlv.GetTlv()) != OK) {
 std::cout << Tlv.GetTlvAsHexString();
 ```
 
-3. Or follow below example using binary collection aproach.
+3. Or follow below example using binary collection approach.
 ```
 //Create BerTlv object
 BerTlv Tlv;
