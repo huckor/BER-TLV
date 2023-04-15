@@ -1,6 +1,6 @@
 # BER-TLV, Basic Encoding Rules - Tag Length Value parser and serializer
 This is BER-TLV parser and serializer class which follows TLV rules from ISO 7816 - Annex D: Use of Basic Encoding Rules ASN.1.
-It's easy to include it in any of your C++ projects because it contains only one class and it's written using C++98 standard. [BerTlv.cpp](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.cpp) and [BerTlv.h](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.h) are the files which you need to include in your project to be able to fully use all it's functionalities. No external libraries required.
+It's easy to include it in any of your C++ projects because it contains only one class and it's written using C++98 standard. [BerTlv.cpp](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.cpp) and [BerTlv.h](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.h) are the files which you need to include in your project to be able to fully use all of it's functionalities. No external libraries required.
 
 
 ## Supported functionalities
