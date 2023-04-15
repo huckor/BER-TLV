@@ -125,7 +125,7 @@ std::vector<unsigned char> OutTlv = Tlv.GetTlv();
 
 ## How to contribute
 There is a Visual Studio Code project inside .vscode folder which supports C++ intellisense and debugging.
-Feel free to create new branch from master branch and fix any issue you find or add new features if you like to. After that just create pull request against master branch. I'll review your PR and merge it.
+Feel free to fix any issue you find or add new features if you like to. Follow instructions from [GitHub Contributing](https://gist.github.com/MarcDiethelm/7303312) to know how to contribute.
 
 
 ## In case you like this project
