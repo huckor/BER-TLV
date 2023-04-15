@@ -121,3 +121,12 @@ if(Tlv->Add(BinTag,  NestedTlv.GetTlv()) != OK) {
 
 std::vector<unsigned char> OutTlv = Tlv.GetTlv();
 ```
+
+
+## How to contribute
+There is a Visual Studio Code project inside .vscode folder which supports C++ intellisense and debugging.
+Feel free to create new branch from master branch and fix any issue you find or add new features if you like to. After that just create pull request against master branch. I'll review your PR and merge it.
+
+
+## In case you like this project
+Much appreciate any of given :star:
