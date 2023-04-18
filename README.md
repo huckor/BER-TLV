@@ -1,32 +1,28 @@
 # BER-TLV, Basic Encoding Rules - Tag Length Value parser and serializer
-This is BER-TLV parser and serializer class which follows TLV rules from ISO 7816 - Annex D: Use of Basic Encoding Rules ASN.1.
-It's easy to include it in any of your C++ projects because it contains only one class and it's written using C++98 standard. [BerTlv.cpp](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.cpp) and [BerTlv.h](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.h) are the files which you need to include in your project to be able to fully use all of it's functionalities. No external libraries required.
+Simple BER-TLV parser and serializer library implemented in C++98. It follows BER-TLV rules from ISO 7816 - Annex D: Use of Basic Encoding Rules ASN.1.
 
 
 ## Supported functionalities
-
 1. Create new TLV objects
-
 2. Append existing TLV objects
-
 3. Add primitive data objects
-
 4. Add constructed data objects
-
 5. Parse primitive data objects
-
 6. Parse constructed data objects
-
 7. Dump all data from TLV
 
 
-## How to use parser
+## Usage
+Add [BerTlv.cpp](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.cpp) and [BerTlv.h](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.h) files into your project and compiled along with it.
+
+
+### How to use parser
 You can observe usage from file [tests.cpp](https://github.com/huckor/BER-TLV/blob/master/src/tests.cpp) or follow below examples.
 
 1. Add BerTlv.cpp and BerTlv.h to your project.
 
 2. Follow below example using hex string approach.
-```
+```cpp
 //Create BerTlv object
 BerTlv Tlv;
 
@@ -42,7 +38,7 @@ if(Tlv.GetValue("9F02", &Value) == OK) {
 ```
 
 3. Or follow below example using binary collection approach.
-```
+```cpp
 //Create BerTlv object
 BerTlv Tlv;
 
@@ -61,13 +57,13 @@ if(Tlv.GetValue(BinTag, &Value) == OK) {
 ```
 
 
-## How to use serializer
+### How to use serializer
 You can observe usage from file [tests.cpp](https://github.com/huckor/BER-TLV/blob/master/src/tests.cpp) or follow below examples.
 
 1. Add BerTlv.cpp and BerTlv.h to your project.
 
 2. Follow below example using hex string approach.
-```
+```cpp
 //Create BerTlv object
 BerTlv Tlv;
 
@@ -93,7 +89,7 @@ std::cout << Tlv.GetTlvAsHexString();
 ```
 
 3. Or follow below example using binary collection approach.
-```
+```cpp
 //Create BerTlv object
 BerTlv Tlv;
 
@@ -124,8 +120,11 @@ std::vector<unsigned char> OutTlv = Tlv.GetTlv();
 
 
 ## How to contribute
-There is a Visual Studio Code project inside .vscode folder which supports C++ intellisense and debugging.
-Feel free to fix any issue you find or add new features if you like to. Follow instructions from [GitHub Contributing](https://gist.github.com/MarcDiethelm/7303312) to know how to contribute.
+This project contains an Visual Studio Code project which supports C++ intellisense and debugging. Open this folder in Visual Studio Code to edit source code and run unit tests.
+
+Feel free to fix any issue you find or add new features if you like to. Follow instructions from [GitHub Contributing](https://gist.github.com/MarcDiethelm/7303312) to know how to contribute. 
+
+Or (not sure this will works :shrug:) create new branch from main then do your changes and then create PR.
 
 
 ## In case you like this project
