@@ -13,7 +13,7 @@ Simple BER-TLV parser and serializer library implemented in C++98. It follows BE
 
 
 ## Usage
-Add [BerTlv.cpp](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.cpp) and [BerTlv.h](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.h) files into your project and compiled along with it.
+Add [BerTlv.cpp](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.cpp) and [BerTlv.h](https://github.com/huckor/BER-TLV/blob/master/src/BerTlv.h) files into your project and compile along with it.
 
 
 ### How to use parser
