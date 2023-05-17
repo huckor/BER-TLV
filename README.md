@@ -119,13 +119,37 @@ std::vector<unsigned char> OutTlv = Tlv.GetTlv();
 ```
 
 
-## How to contribute
-This project contains an Visual Studio Code project which supports C++ intellisense and debugging. Open this folder in Visual Studio Code to edit source code and run unit tests.
+## How to Contribute
 
-Feel free to fix any issue you find or add new features if you like to. Follow instructions from [GitHub Contributing](https://gist.github.com/MarcDiethelm/7303312) to know how to contribute. 
+Contributions are highly encouraged and appreciated! If you have any ideas, suggestions, or bug fixes, please feel free to contribute. Here's how you can get started:
 
-Or (not sure this will works :shrug:) create new branch from main then do your changes and then create PR.
+1. Fork this repository to your GitHub account.
+2. Make the desired changes or add new features to your forked repository.
+3. Write test cases for your changes.
+4. Submit a pull request, explaining the changes you have made and why they are beneficial.
+5. I will review your pull request as soon as possible and provide feedback if needed.
+6. Once your changes are approved, they will be merged into the main repository.
+7. Congratulations! You have successfully contributed to this project.
 
+## Code Style and Guidelines
 
-## In case you like this project
-Much appreciate any of given :star:
+To maintain code consistency and readability, please adhere to the following guidelines:
+
+- Write clean and self-explanatory code.
+- Use meaningful variable and function names.
+- Follow the established coding style and formatting.
+- Add comments where necessary to improve code understanding.
+
+## Issues and Bug Reports
+
+If you come across any issues or bugs while using this project, please report them using the GitHub issue tracker. Include a detailed description of the problem, steps to reproduce it, and any relevant information that might help in resolving the issue.
+
+## Support
+
+If you need any assistance or have questions regarding this project, feel free to reach out to me. I'll do my best to help you.
+
+## Spread the Word
+
+If you find this project helpful or interesting, consider giving it a star on GitHub. Also, sharing it with others who might benefit from it would be greatly appreciated.
+
+Thank you for your interest in this project.
